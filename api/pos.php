@@ -65,6 +65,24 @@ function deleteOrder(int $id): bool {
     return posSupabaseRequest('DELETE', "orders?id=eq.$id") !== null;
 }
 
+function listCashiers(): array {
+    return posSupabaseRequest('GET', 'cashiers', ['select' => '*', 'order' => 'name.asc']) ?? [];
+}
+
+function createCashier(array $data): ?array {
+    $res = posSupabaseRequest('POST', 'cashiers', [], [$data]);
+    return $res[0] ?? null;
+}
+
+function deleteCashier(int $id): bool {
+    return posSupabaseRequest('DELETE', "cashiers?id=eq.$id") !== null;
+}
+
+function loginCashier(string $pin): ?array {
+    $res = posSupabaseRequest('GET', 'cashiers', ['select' => '*', 'pin' => "eq.$pin"]);
+    return $res[0] ?? null;
+}
+
 function dashboardStats(): array {
     $orders = listOrders();
     $totalSales = 0;
@@ -148,6 +166,36 @@ try {
     } elseif ($path === '/api/pos/dashboard') {
         if ($method !== 'GET') { http_response_code(405); echo json_encode(['error' => 'Method not allowed']); exit; }
         echo json_encode(['data' => dashboardStats()]);
+    } elseif (preg_match('#^/api/pos/cashiers(?:/(\d+))?#', $path, $m)) {
+        $id = isset($m[1]) ? (int)$m[1] : null;
+        switch ($method) {
+            case 'GET':
+                echo json_encode(['data' => listCashiers()]);
+                break;
+            case 'POST':
+                $body = json_decode(file_get_contents('php://input'), true);
+                if (empty($body['name'])) { http_response_code(400); echo json_encode(['error' => 'Name required']); exit; }
+                $c = createCashier([
+                    'name' => $body['name'],
+                    'pin' => $body['pin'] ?? '0000',
+                    'role' => $body['role'] ?? 'cashier',
+                ]);
+                http_response_code(201);
+                echo json_encode(['data' => $c]);
+                break;
+            case 'DELETE':
+                if (!$id) { http_response_code(400); echo json_encode(['error' => 'ID required']); exit; }
+                if (!deleteCashier($id)) { http_response_code(404); echo json_encode(['error' => 'Not found']); exit; }
+                echo json_encode(['ok' => true]);
+                break;
+            default: http_response_code(405); echo json_encode(['error' => 'Method not allowed']);
+        }
+    } elseif ($path === '/api/pos/login' && $method === 'POST') {
+        $body = json_decode(file_get_contents('php://input'), true);
+        $pin = $body['pin'] ?? '';
+        $cashier = loginCashier($pin);
+        if (!$cashier) { http_response_code(401); echo json_encode(['error' => 'Invalid PIN']); exit; }
+        echo json_encode(['data' => $cashier]);
     } else {
         http_response_code(404);
         echo json_encode(['error' => 'Not found']);
