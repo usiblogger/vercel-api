@@ -1,0 +1,11 @@
+{
+  "name": "852school/todo-app",
+  "description": "Todo app deployable to Vercel with SQLite or Supabase",
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "ext-curl": "*",
+    "ext-json": "*"
+  }
+}
