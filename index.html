@@ -126,7 +126,10 @@
     .tut-box .tut-btn { padding: 12px 32px; border-radius: 14px; border: none; background: #007aff; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
     .tut-box .tut-skip { display: block; margin-top: 12px; border: none; background: none; color: #aeaeb2; font-size: 13px; cursor: pointer; }
 
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1d1d1f; color: #fff; padding: 12px 24px; border-radius: 14px; font-size: 14px; font-weight: 600; z-index: 300; display: none; animation: fadeUp .3s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     @media (prefers-color-scheme: dark) {
+      .toast { background: #f5f5f7; color: #1d1d1f; }
       body { background: #000; color: #f5f5f7; }
       .nav { background: #1c1c1e; border-color: #38383a; }
       .nav button { color: #0a84ff; }
@@ -415,9 +418,10 @@
     document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1));
     if (btn) btn.classList.add('active');
+    if (name === 'pos') { loadProducts(); loadOrders(); }
     if (name === 'orders') loadOrders();
     if (name === 'dashboard') loadDashboard();
-    if (name === 'products') loadProductsMgmt();
+    if (name === 'products') { loadProducts(); loadOrders(); }
   }
 
   // --- Products ---
@@ -502,7 +506,8 @@
       await api('POST', '/api/pos/orders', { items: cart, payment_method: method });
       cart = [];
       renderCart();
-      updateOrderBadge();
+      await loadOrders();
+      toast('Order completed! ✓');
     } catch (e) { alert('Checkout failed: ' + e.message); }
   }
 
@@ -537,7 +542,7 @@
     loadOrders(); loadDashboard();
   }
 
-  function updateOrderBadge() { document.getElementById('orderBadge').textContent = orders.length || '0'; }
+  function updateOrderBadge() { document.getElementById('orderBadge').textContent = orders.length; }
 
   // --- Dashboard ---
   async function loadDashboard() {
@@ -615,6 +620,7 @@
     else await api('POST', '/api/pos/products', body);
     closeProductModal();
     await loadProducts();
+    toast(editingProductId ? 'Product updated ✓' : 'Product added ✓');
   }
 
   function editProduct(id) { const p = products.find(x => x.id === id); if (p) showProductModal(p); }
@@ -655,6 +661,14 @@
     showTutorial();
   }
 
+  // Toast
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 2000);
+  }
+
   // Listen for image URL changes to update preview
   document.getElementById('prodImage').addEventListener('input', function() {
     const preview = document.getElementById('imagePreview');
@@ -662,5 +676,6 @@
     else { preview.style.display = 'none'; }
   });
 </script>
+<div class="toast" id="toast"></div>
 </body>
 </html>
