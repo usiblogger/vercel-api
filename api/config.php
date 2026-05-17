@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(0);
+
 define('DB_DRIVER', getenv('DB_DRIVER') ?: 'sqlite');
 define('STORAGE_DRIVER', getenv('STORAGE_DRIVER') ?: 'local');
 define('SUPABASE_URL', getenv('SUPABASE_URL') ?: '');

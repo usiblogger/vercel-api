@@ -23,7 +23,6 @@ function supabaseRequest(string $method, string $path, array $data = [], ?string
     if ($method !== 'GET' && $data) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     $res = curl_exec($ch);
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
     if ($http >= 200 && $http < 300) {
         $decoded = json_decode($res, true);
         return is_array($decoded) ? $decoded : null;
@@ -89,7 +88,6 @@ function supabaseStorageRequest(string $method, string $path, array $headers = [
     if ($body) curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     $res = curl_exec($ch);
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
     if (in_array($http, [200, 201, 202, 204])) {
         $decoded = json_decode($res, true);
         return is_array($decoded) ? $decoded : [];

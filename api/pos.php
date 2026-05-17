@@ -26,7 +26,6 @@ function posSupabaseRequest(string $method, string $table, array $params = [], a
     }
     $res = curl_exec($ch);
     $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
     if ($http >= 200 && $http < 300) {
         if ($method === 'DELETE' && empty($res)) return ['ok' => true];
         $decoded = json_decode($res, true);
