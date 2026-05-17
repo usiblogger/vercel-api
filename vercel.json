@@ -5,7 +5,9 @@
     }
   },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/todos.php" },
+    { "src": "/api/pos(/?.*)", "dest": "/api/pos.php" },
+    { "src": "/api/todos(/?.*)", "dest": "/api/todos.php" },
+    { "src": "/api/files(/?.*)", "dest": "/api/files.php" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
